@@ -6,6 +6,22 @@ server:
   shutdown: graceful
 
 spring:
+  application:
+    name: edge-service
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+    resilience4j:
+      circuitbreaker:
+        configs:
+          default:
+            slidingWindowSize: 20
+            permittedNumberOfCallsInHalfOpenState: 5
+            failureRateThreshold: 50
+            waitDurationInOpenState: 15000
+      timelimiter:
+        configs:
+          default:
+            timeoutDuration: 5s
   cloud:
     gateway:
       httpclient:
@@ -45,19 +61,16 @@ spring:
             - name: CircuitBreaker
               args:
                 name: orderCircuitBreaker
-  application:
-    name: edge-service
-  lifecycle:
-    timeout-per-shutdown-phase: 15s
-    resilience4j:
-      circuitbreaker:
-        configs:
-          default:
-            slidingWindowSize: 20
-            permittedNumberOfCallsInHalfOpenState: 5
-            failureRateThreshold: 50
-            waitDurationInOpenState: 15000
-      timelimiter:
-        configs:
-          default:
-            timeoutDuration: 5s
+  redis:
+    connect-timeout: 2s
+    host: localhost
+    port: 6379
+    timeout: 1s
+  session:
+    store-type: redis
+    timeout: 10m
+    redis:
+      namespace: polar:edge
+logging:
+  level:
+    io.github.resilience4j: DEBUG
